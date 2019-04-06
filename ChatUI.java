@@ -3,6 +3,7 @@ import java.util.Scanner;
 public class ChatUI extends Thread {
 
 	public Session s = null;
+	
 
 	public void run() {
 		Scanner sc = new Scanner(System.in);
