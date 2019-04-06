@@ -39,14 +39,25 @@ public class Session extends Thread {
 
 		while (1>0) {
 			try {
+				System.out.println("Waiting for connections");
 				Socket sock = server.accept();
+				System.out.println("Accepted Connection");
+				//System.out.println(sock.getRemoteSocketAddress().toString());
 				BufferedWriter out = new BufferedWriter(new OutputStreamWriter(sock.getOutputStream()));
 				BufferedReader in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
 
+				System.out.println("Reading");
+
+				Peer p = new Peer(sock, in, out, this, false, false);
+				p.start();
+				peers.add(p);
 			
+				/*
 				String message = in.readLine();
+				System.out.println("Read Message");
 				System.out.println(message);
 				System.exit(0);
+				*/
 			}
 
 			catch (Exception e) {
@@ -65,40 +76,37 @@ public class Session extends Thread {
 		server = new ServerSocket(port);
 		this.port = port;
 		joined = true;
-		//this.start();
+		this.start();
 	}
 
 	/*
 		Connect to a peer
+		ip: the ip to connect to
+		discover: Whether the peer needs to discover the network
 	*/
-	public void joinPeer(String ip) {
+	public void joinPeer(String ip, boolean discover) throws IOException {
 
-		try {
-			Socket sock = new Socket(ip, port);
-			BufferedWriter out = new BufferedWriter(new OutputStreamWriter(sock.getOutputStream()));
-			BufferedReader in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
 
-			Peer p = new Peer("Test", 100, 99999, sock, in, out, this);
-			p.start();
+		Socket sock = new Socket(ip, port);
+		BufferedWriter out = new BufferedWriter(new OutputStreamWriter(sock.getOutputStream()));
+		BufferedReader in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
 
-			peers.add(p);
-			System.out.println("Joining peer: " + ip);
-		}
+		Peer p = new Peer(sock, in, out, this, true, discover);
+		p.start();
 
-		catch (Exception e) {
-			e.printStackTrace();
-		}
+		peers.add(p);
+		System.out.println("Joining peer: " + ip);
 
 	}
 
 	public void joinPortAndIP(int port, String ip) throws IOException {
 		joinPort(port);
-		joinPeer(ip);
+		joinPeer(ip, true);
 	}
 
 	public void joinIP(String ip) throws IOException {
 		joinPort(port);
-		joinPeer(ip);
+		joinPeer(ip, true);
 	}
 
 	public void setUserName(String name) throws IllegalArgumentException {
@@ -144,8 +152,18 @@ public class Session extends Thread {
 		return zip > 0 && zip <100000;
 	}
 
+	/**
+		Accepts raw keyboard input from user
+		Escapes message and inserts into correct format
+		Delivers to each peer
+	*/
 	public void sendMessage(String message) {
-		System.out.println("TODO");
+		//Format message
+
+		//Deliver to all peers
+		for (Peer p: peers) {
+			p.deliver(message);
+		}
 	}
 
 }

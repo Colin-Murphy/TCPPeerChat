@@ -32,7 +32,7 @@ public class ChatUI extends Thread {
 										command = true;
 									}
 									// /join ip
-									else if (words.length >= 2) {
+									else if (words.length == 2) {
 										s.joinIP(words[1]);
 										command = true;
 									}
@@ -67,7 +67,7 @@ public class ChatUI extends Thread {
 
 				if (!command) {
 					System.out.println("Writing Message");
-					System.out.println(in);
+					s.sendMessage(in);
 				}
 			}
 		}
