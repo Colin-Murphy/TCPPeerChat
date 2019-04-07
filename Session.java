@@ -5,19 +5,22 @@ import java.io.IOException;
 import java.net.*;
 import java.io.*;
 
+import org.json.JSONObject;
+import org.json.JSONArray;
+
 public class Session extends Thread {
 	//There is always a session, until you try to join someone it's a local session
 	public boolean joined = false;
 
-	private ArrayList<Peer> peers = new ArrayList<Peer>();
+	public ArrayList<Peer> peers;
 
 	public ChatUI ui = null;
 	private int port = 8080;
 
 	//Users information
-	private String name;
-	private int zip;
-	private int age;
+	public String name;
+	public int zip;
+	public int age;
 
 	private ServerSocket server = null;
 	private Socket socket = null;
@@ -27,11 +30,10 @@ public class Session extends Thread {
 
 
 	public Session(String name, int zip, int age) throws IllegalArgumentException {
-		System.out.println("Hello");
-		System.out.printf("New Session with name:%s age %d zip %d\n", name, age, zip);
 		setUserName(name);
 		setAge(age);
-		//setZip(zip);
+		setZip(zip);
+		peers = new ArrayList<Peer>();
 
 	}
 
@@ -39,14 +41,9 @@ public class Session extends Thread {
 
 		while (1>0) {
 			try {
-				System.out.println("Waiting for connections");
 				Socket sock = server.accept();
-				System.out.println("Accepted Connection");
-				//System.out.println(sock.getRemoteSocketAddress().toString());
 				BufferedWriter out = new BufferedWriter(new OutputStreamWriter(sock.getOutputStream()));
 				BufferedReader in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
-
-				System.out.println("Reading");
 
 				Peer p = new Peer(sock, in, out, this, false, false);
 				p.start();
@@ -67,12 +64,25 @@ public class Session extends Thread {
 		}
 	}
 
+	public JSONArray peersExcluding(Peer exclude) {
+		JSONArray peersResp = new JSONArray();
+
+		for (Peer p:peers) {
+			//Dont tell a peer about themself
+			if (p != exclude) {
+				peersResp.put(p.getIP());
+			}
+
+		}
+
+		return peersResp;
+	}
+
 	/*
 		Starts a server listening on the specified port.
 		Sessions run method will accept incomming connections
 	*/
 	public void joinPort(int port) throws IOException {
-		System.out.println("Joining Port: " + port);
 		server = new ServerSocket(port);
 		this.port = port;
 		joined = true;
@@ -95,7 +105,6 @@ public class Session extends Thread {
 		p.start();
 
 		peers.add(p);
-		System.out.println("Joining peer: " + ip);
 
 	}
 
@@ -160,9 +169,20 @@ public class Session extends Thread {
 	public void sendMessage(String message) {
 		//Format message
 
+		//Format the message as json and escape the text
+		JSONObject m = new JSONObject();
+		m.put("type", "message");
+		m.put("message", message);
+
+		//JSONObject rec = new JSONObject(m.toString());
+
+		//System.out.println(rec.get("message"));
+
+		//System.out.println(m.toString());
+
 		//Deliver to all peers
 		for (Peer p: peers) {
-			p.deliver(message);
+			p.deliver(m.toString());
 		}
 	}
 

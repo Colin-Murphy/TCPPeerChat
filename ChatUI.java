@@ -66,7 +66,6 @@ public class ChatUI extends Thread {
 				}
 
 				if (!command) {
-					System.out.println("Writing Message");
 					s.sendMessage(in);
 				}
 			}

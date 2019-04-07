@@ -13,7 +13,6 @@ public class PeerChat {
 
 		try {
 			ui = new ChatUI();
-			System.out.println("Test");
 			if (args.length != argsWithPort && args.length != argsNoPort) {
 				System.err.println("Invalid Arguments: Exiting...");
 				System.exit(1);
@@ -43,8 +42,6 @@ public class PeerChat {
 
 
 	public static void main(String[] args) {
-		System.out.println(args.length);
-
 		new PeerChat(args);
 
 	}

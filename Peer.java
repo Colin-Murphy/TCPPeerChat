@@ -1,12 +1,15 @@
 import java.net.*;
 import java.io.*;
 
+import org.json.JSONObject;
+import org.json.JSONArray;
+
 public class Peer extends Thread {
 	private String name = null;
 	private int age = 0;
 	private int zip = 0;
 
-	private Socket sock = null;
+	public Socket sock = null;
 	private BufferedReader in = null;
 	private BufferedWriter out = null;
 
@@ -18,6 +21,8 @@ public class Peer extends Thread {
 	//Whether or not the peer needs to be queried for a list of peers
 	private boolean discover;
 
+	private boolean joined = false;
+
 	public Peer(Socket sock, BufferedReader in, BufferedWriter out, Session s, boolean initiated, boolean discover) {
 		this.sock = sock;
 		this.in = in;
@@ -28,54 +33,117 @@ public class Peer extends Thread {
 	}
 
 	public void run() {
-		System.out.println("Peer now running");
-
 		try {
 
 			//Peer hasn't fully joined
-			if (name == null) {
-
-				String message = "Hello There!";
+			if (!joined) {
 
 				//This peer initiated the connection, so it must introduce itself
 				if (initiated) {
-					deliver(message);
-					String input = in.readLine();
-					System.out.println(input);
-					name = "test";
+
+					//Tell them my identity
+					JSONObject message = new JSONObject();
+					message.put("type", "join");
+					message.put("name", s.name);
+					message.put("age", s.age);
+					message.put("zip", s.zip);
+
+					deliver(message.toString());
+
+					//Get their response
+					JSONObject input = new JSONObject(in.readLine());
+
+					try {
+						setUserName(input.get("name").toString());
+						setZip(Integer.parseInt(input.get("zip").toString()));
+						setAge(Integer.parseInt(input.get("age").toString()));
+						joined = true;
+					}
+					catch (Exception e) {
+						e.printStackTrace();
+					}
+
+					//Send a who to this peer to learn the network
+					if (discover) {
+						message = new JSONObject();
+						message.put("type", "who");
+						deliver(message.toString());
+
+						message = new JSONObject(in.readLine());
+						JSONArray peers = message.getJSONArray("peers");
+
+						for (int i = 0; i < peers.length(); i++) {
+							s.joinPeer(peers.getString(i), false);
+						}
+						
+					}
+
+					System.out.println("[joined chat with " + (s.peers.size()+1) + " members]");
+
+
 				}
 
 				//Didn't start the connection, wait for them to introduce themselves
 				else {
-					String input = in.readLine();
-					System.out.println(input);
-					if (input.equals(message)) {
-						System.out.println("Correct");
-						deliver("ohai");
-						name = "Test";
+					JSONObject input = new JSONObject(in.readLine());
+
+					try {
+						setUserName(input.get("name").toString());
+						setZip(Integer.parseInt(input.get("zip").toString()));
+						setAge(Integer.parseInt(input.get("age").toString()));
+						joined = true;
+					}
+					catch (Exception e) {
+						e.printStackTrace();
 					}
 
-					else {
-						System.out.println("WRONG");
-						System.out.println(input);
-					}
+					//Tell them my identity
+					JSONObject message = new JSONObject();
+					message.put("type", "join-reply");
+					message.put("name", s.name);
+					message.put("age", s.age);
+					message.put("zip", s.zip);
+
+					deliver(message.toString());
+					System.out.println("[member joined: " + name +"@" + getIP() +" " + zip + " " + age + "]");
+
+					
 				}
 
 			}
-			/*
-			System.out.println("Sending message");
-			out.write("Hello There!\n");
-			//out.newLine();
-			out.flush();
-			System.out.println("Message Sent");
-			*/
 
-			boolean exit = false;
+			//Fully joined peer, read and handle their messages indefinitely
+			while (joined) {
+				JSONObject message = new JSONObject(in.readLine());
 
-			while (!exit) {
-				System.out.println("About to read");
-				System.out.println(in.readLine());
-				System.out.println("Read Complete");
+				String type = message.get("type").toString();
+
+				switch (type) {
+					case "message":
+						System.out.println("<" + name + "> " + message.get("message").toString());
+						break;
+					case "leave":
+						System.out.println("Leaving");
+						break;
+					case "who":
+						System.out.println("Who");
+
+						message = new JSONObject();
+						message.put("type", "who-reply");
+						message.put("peers", s.peersExcluding(this));
+
+						deliver(message.toString());
+						break;
+					case "zip":
+						System.out.println("Zip");
+						break;
+					case "age":
+						System.out.println("Age");
+						break;
+					default:
+						System.out.println(type);
+				}
+
 				
 			}
 
@@ -88,7 +156,6 @@ public class Peer extends Thread {
 
 	public void deliver(String message) {
 		try {
-			System.out.println("Delivering");
 			out.write(message);
 			out.newLine();
 			out.flush();
@@ -97,5 +164,40 @@ public class Peer extends Thread {
 		catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	public void setUserName(String name) throws IllegalArgumentException {
+		if (s.legalName(name)) {
+			this.name = name;
+		}
+		else {
+			throw new IllegalArgumentException();
+		}
+
+	}
+
+	public void setZip(int zip) throws IllegalArgumentException {
+		if (s.legalZip(zip)) {
+			this.zip = zip;
+		}
+		else {
+			throw new IllegalArgumentException();
+		}
+
+	}
+
+	public void setAge(int age) throws IllegalArgumentException {
+		if (s.legalAge(age)) {
+			this.age = age;
+		}
+		else {
+			throw new IllegalArgumentException();
+		}
+	}
+
+	public String getIP() {
+		String ip = sock.getRemoteSocketAddress().toString();
+		ip = ip.substring(1,ip.indexOf(":"));
+		return ip;
 	}
 }
