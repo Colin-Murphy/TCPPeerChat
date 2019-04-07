@@ -39,29 +39,69 @@ public class Session extends Thread {
 
 	public void run() {
 
-		while (1>0) {
-			try {
-				Socket sock = server.accept();
-				BufferedWriter out = new BufferedWriter(new OutputStreamWriter(sock.getOutputStream()));
-				BufferedReader in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
+		//System.out.println("Runnnig");
 
-				Peer p = new Peer(sock, in, out, this, false, false);
-				p.start();
-				peers.add(p);
-			
-				/*
-				String message = in.readLine();
-				System.out.println("Read Message");
-				System.out.println(message);
-				System.exit(0);
-				*/
+		while (1>0) {
+			if (server != null) {
+				try {
+					Socket sock = server.accept();
+					BufferedWriter out = new BufferedWriter(new OutputStreamWriter(sock.getOutputStream()));
+					BufferedReader in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
+
+					Peer p = new Peer(sock, in, out, this, false, false);
+					p.start();
+					peers.add(p);
+
+				}
+
+				catch (Exception e) {
+					//e.printStackTrace();
+				}
+
 			}
 
+			
+			else {
+				System.out.print("");
+			}
+			
+		}
+
+	}
+
+	public void showUsers() {
+		System.out.println("[" + name + " " + age + " " + zip);
+		for (Peer p: peers) {
+			System.out.println("[" + p.name + " " + p.age + " " + p.zip +"]");
+		}
+	}
+
+	public void leave() {
+		JSONObject message = new JSONObject();
+		message.put("type", "leave");
+		for (Peer p:peers) {
+			try {
+				p.deliver(message.toString());
+				p.in.close();
+				p.out.close();
+				p.sock.close();
+				p.joined = false;
+			}
 			catch (Exception e) {
 				e.printStackTrace();
 			}
-
 		}
+
+		peers = new ArrayList<Peer>();
+		try {
+			server.close();
+			server = null;
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		joined = false;
 	}
 
 	public JSONArray peersExcluding(Peer exclude) {
@@ -83,10 +123,17 @@ public class Session extends Thread {
 		Sessions run method will accept incomming connections
 	*/
 	public void joinPort(int port) throws IOException {
-		server = new ServerSocket(port);
+		this.server = new ServerSocket(port);
 		this.port = port;
 		joined = true;
-		this.start();
+		try {
+			this.start();
+		}
+
+
+		catch (Exception e) {
+
+		}
 	}
 
 	/*

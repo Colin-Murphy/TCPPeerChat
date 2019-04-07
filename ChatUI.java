@@ -24,17 +24,24 @@ public class ChatUI extends Thread {
 						switch(words[0]) {
 							case "/join":
 								if (!s.joined) {
-									// /join [-p port] ip
-									if (words.length >= 4) {
-										int port = Integer.parseInt(words[2]);
-										String ip = words[3];
-										s.joinPortAndIP(port, ip);
-										command = true;
+									try {
+										// /join [-p port] ip
+										if (words.length >= 4) {
+											int port = Integer.parseInt(words[2]);
+											String ip = words[3];
+											s.joinPortAndIP(port, ip);
+											command = true;
+										}
+										// /join ip
+										else if (words.length == 2) {
+											s.joinIP(words[1]);
+											command = true;
+										}
 									}
-									// /join ip
-									else if (words.length == 2) {
-										s.joinIP(words[1]);
-										command = true;
+									catch (Exception e) {
+										System.out.println("[join failure - 2");
+										//Stop listening on the port in case it was the ip that failed
+										s.leave();
 									}
 								}
 								else {
@@ -43,10 +50,13 @@ public class ChatUI extends Thread {
 								}
 								break;
 							case "/leave":
-								//s.leave();
+								s.leave();
+								//New copy of the session that hasn't been started yet
+								command = true;
 								break;
 							case "/who":
-								System.out.println("Who");
+								command = true;
+								s.showUsers();
 								break;
 							case "/zip":
 								System.out.println("Zip");
@@ -55,6 +65,8 @@ public class ChatUI extends Thread {
 								System.out.println("Age");
 								break;
 							case "/exit":
+								s.leave();
+								System.exit(0);
 								System.out.println("Exit");
 								break;
 						}
@@ -76,23 +88,5 @@ public class ChatUI extends Thread {
 		System.out.println(message);
 	}
 
-	public enum Command {
-		JOIN("join"),
-		LEAVE("leave"),
-		WHO("who"),
-		ZIP("zip"),
-		AGE("age");
-
-		private String command;
-
-		Command(String comm) {
-			command = comm;
-		}
-
-		public String toString() {
-			return command;
-		}
-
-	}
 	
 }

@@ -5,13 +5,13 @@ import org.json.JSONObject;
 import org.json.JSONArray;
 
 public class Peer extends Thread {
-	private String name = null;
-	private int age = 0;
-	private int zip = 0;
+	public String name = null;
+	public int age = 0;
+	public int zip = 0;
 
 	public Socket sock = null;
-	private BufferedReader in = null;
-	private BufferedWriter out = null;
+	public BufferedReader in = null;
+	public BufferedWriter out = null;
 
 	private Session s = null;
 
@@ -21,7 +21,7 @@ public class Peer extends Thread {
 	//Whether or not the peer needs to be queried for a list of peers
 	private boolean discover;
 
-	private boolean joined = false;
+	public boolean joined = false;
 
 	public Peer(Socket sock, BufferedReader in, BufferedWriter out, Session s, boolean initiated, boolean discover) {
 		this.sock = sock;
@@ -76,9 +76,9 @@ public class Peer extends Thread {
 							s.joinPeer(peers.getString(i), false);
 						}
 						
+						System.out.println("[joined chat with " + (s.peers.size()+1) + " members]");
 					}
 
-					System.out.println("[joined chat with " + (s.peers.size()+1) + " members]");
 
 
 				}
@@ -114,7 +114,14 @@ public class Peer extends Thread {
 
 			//Fully joined peer, read and handle their messages indefinitely
 			while (joined) {
-				JSONObject message = new JSONObject(in.readLine());
+				JSONObject message = null;
+				try {
+					message = new JSONObject(in.readLine());
+				}
+				catch (NullPointerException e) {
+					return;
+					//Error json doesn't like it when you rip its sockets away, too bad
+				}
 
 				String type = message.get("type").toString();
 
@@ -123,11 +130,19 @@ public class Peer extends Thread {
 						System.out.println("<" + name + "> " + message.get("message").toString());
 						break;
 					case "leave":
-						System.out.println("Leaving");
+						try {
+							in.close();
+							out.close();
+							sock.close();
+							joined = false;
+							s.peers.remove(this);
+							System.out.println("[" + name + "@" + getIP() + " left the chat]");
+						}
+						catch (Exception e) {
+							e.printStackTrace();
+						}
 						break;
 					case "who":
-						System.out.println("Who");
-
 						message = new JSONObject();
 						message.put("type", "who-reply");
 						message.put("peers", s.peersExcluding(this));
@@ -147,7 +162,6 @@ public class Peer extends Thread {
 				
 			}
 
-			System.out.println("Peer run completing");
 		}
 		catch (Exception e) {
 			e.printStackTrace();
