@@ -221,12 +221,6 @@ public class Session extends Thread {
 		m.put("type", "message");
 		m.put("message", message);
 
-		//JSONObject rec = new JSONObject(m.toString());
-
-		//System.out.println(rec.get("message"));
-
-		//System.out.println(m.toString());
-
 		//Deliver to all peers
 		for (Peer p: peers) {
 			p.deliver(m.toString());

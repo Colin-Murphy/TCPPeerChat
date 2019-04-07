@@ -34,13 +34,10 @@ public class Peer extends Thread {
 
 	public void run() {
 		try {
-
 			//Peer hasn't fully joined
 			if (!joined) {
-
 				//This peer initiated the connection, so it must introduce itself
 				if (initiated) {
-
 					//Tell them my identity
 					JSONObject message = new JSONObject();
 					message.put("type", "join");
