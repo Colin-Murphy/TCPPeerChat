@@ -1,3 +1,12 @@
+/*
+	Session.java
+	Maintains connections between peers in a chat group
+	@author Colin Murphy <clm3888@rit.edu>
+
+	Part of data comm homework 3
+*/
+
+
 import java.util.ArrayList;
 import java.lang.IllegalArgumentException;
 import java.io.IOException;
@@ -15,7 +24,7 @@ public class Session extends Thread {
 	public ArrayList<Peer> peers;
 
 	public ChatUI ui = null;
-	private int serverPort;
+	public int serverPort;
 
 	//Users information
 	public String name;
@@ -120,6 +129,10 @@ public class Session extends Thread {
 		}
 	}
 
+	/*
+		Leave the chat
+		silent: boolean whether or not it should print that you left
+	*/
 	public void leave(boolean silent) {
 		JSONObject message = new JSONObject();
 		message.put("type", "leave");
@@ -144,6 +157,9 @@ public class Session extends Thread {
 		joined = false;
 	}
 
+	/*
+		Added the boolean requirement later, keep around a no args version in case
+	*/
 	public void leave() {
 		leave(false);
 	}
@@ -165,24 +181,6 @@ public class Session extends Thread {
 		return peersResp;
 	}
 
-	/*
-		Starts a server listening on the specified port.
-		Sessions run method will accept incomming connections
-	
-	public void joinPort(int port) throws IOException {
-		this.server = new ServerSocket(serverPort);
-		this.port = port;
-		joined = true;
-		try {
-			this.start();
-		}
-
-
-		catch (Exception e) {
-
-		}
-	}
-	*/
 
 	/*
 		Connect to a peer
@@ -190,7 +188,6 @@ public class Session extends Thread {
 		discover: Whether the peer needs to discover the network
 	*/
 	public void joinPeer(String ip, int port, boolean discover) throws IOException {
-
 
 		Socket sock = new Socket();//(ip, port);
 		sock.connect(new InetSocketAddress(ip, port), 1000);

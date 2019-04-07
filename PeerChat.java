@@ -1,3 +1,11 @@
+/*
+	PeerChat.java
+	Handles main execution of program, sets up threads to do the rest
+	@author Colin Murphy <clm3888@rit.edu>
+
+	Part of data comm homework 3
+*/
+
 import java.lang.Thread.*;
 import java.net.BindException;
 

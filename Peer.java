@@ -1,3 +1,11 @@
+/*
+	Peer.java
+	Represents a single peer and handles the networking for that one peer
+	@author Colin Murphy <clm3888@rit.edu>
+
+	Part of data comm homework 3
+*/
+
 import java.net.*;
 import java.io.*;
 
@@ -47,6 +55,7 @@ public class Peer extends Thread {
 					message.put("name", s.name);
 					message.put("age", s.age);
 					message.put("zip", s.zip);
+					message.put("port", s.serverPort);
 
 					deliver(message.toString());
 
@@ -57,6 +66,7 @@ public class Peer extends Thread {
 						setUserName(input.get("name").toString());
 						setZip(Integer.parseInt(input.get("zip").toString()));
 						setAge(Integer.parseInt(input.get("age").toString()));
+						this.port = Integer.parseInt(input.get("port").toString());
 						joined = true;
 					}
 					catch (Exception e) {
@@ -95,6 +105,7 @@ public class Peer extends Thread {
 						setUserName(input.get("name").toString());
 						setZip(Integer.parseInt(input.get("zip").toString()));
 						setAge(Integer.parseInt(input.get("age").toString()));
+						this.port = Integer.parseInt(input.get("port").toString());
 						joined = true;
 					}
 					catch (Exception e) {
@@ -107,6 +118,7 @@ public class Peer extends Thread {
 					message.put("name", s.name);
 					message.put("age", s.age);
 					message.put("zip", s.zip);
+					message.put("port", s.serverPort);
 
 					deliver(message.toString());
 					System.out.println("[member joined: " + name +"@" + getIP() +" " + zip + " " + age + "]");
@@ -153,8 +165,7 @@ public class Peer extends Thread {
 
 						deliver(message.toString());
 						break;
-					default:
-						System.out.println(type);
+
 				}
 
 				

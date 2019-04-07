@@ -1,3 +1,11 @@
+/*
+	ChatUI.java
+	Implements the ui for PeerChat
+	@author Colin Murphy <clm3888@rit.edu>
+
+	Part of data comm homework 3
+*/
+
 import java.util.Scanner;
 
 public class ChatUI extends Thread {
@@ -55,7 +63,7 @@ public class ChatUI extends Thread {
 									command = true;
 								}
 								else {
-									System.out.println("Not in a session.");
+									System.out.println("Not in a chat.");
 								}
 								break;
 							case "/who":
