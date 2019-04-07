@@ -1,4 +1,5 @@
 import java.lang.Thread.*;
+import java.net.BindException;
 
 public class PeerChat {
 	//Holds the session that will eventually be created
@@ -20,20 +21,25 @@ public class PeerChat {
 
 			//Provided a port to join
 			else if (args.length == argsWithPort) {
-				s = new Session(args[2], Integer.parseInt(args[3]), Integer.parseInt(args[4]));
-				s.joinPort(Integer.parseInt(args[1]));
+				s = new Session(args[2], Integer.parseInt(args[3]), Integer.parseInt(args[4]), Integer.parseInt(args[1]));
 			}
 
 			else {
-				s = new Session(args[0], Integer.parseInt(args[1]), Integer.parseInt(args[2]));
+				s = new Session(args[0], Integer.parseInt(args[1]), Integer.parseInt(args[2]), 8080);
 
 			}
 
 			ui.s = s;
 			ui.start();
 		}
+
+		catch (BindException e) {
+			System.err.println("Port already in use, use -p to join a different one");
+			System.exit(1);
+		}
+
 		catch (Exception e) {
-			System.err.println("Shit went wrong: Exiting...");
+			System.err.println("Invalid Arguments: Exiting...");
 			System.exit(1);
 		}
 

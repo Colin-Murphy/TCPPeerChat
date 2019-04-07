@@ -23,13 +23,16 @@ public class Peer extends Thread {
 
 	public boolean joined = false;
 
-	public Peer(Socket sock, BufferedReader in, BufferedWriter out, Session s, boolean initiated, boolean discover) {
+	public int port;
+
+	public Peer(Socket sock, BufferedReader in, BufferedWriter out, Session s, boolean initiated, boolean discover, int port) {
 		this.sock = sock;
 		this.in = in;
 		this.out = out;
 		this.s = s;
 		this.initiated = initiated;
 		this.discover = discover;
+		this.port = port;
 	}
 
 	public void run() {
@@ -67,10 +70,14 @@ public class Peer extends Thread {
 						deliver(message.toString());
 
 						message = new JSONObject(in.readLine());
+
 						JSONArray peers = message.getJSONArray("peers");
 
 						for (int i = 0; i < peers.length(); i++) {
-							s.joinPeer(peers.getString(i), false);
+							JSONObject peer = peers.getJSONObject(i);
+							String ip = peer.get("ip").toString();
+							int port = Integer.parseInt(peer.get("port").toString());
+							s.joinPeer(ip, port, false);
 						}
 						
 						System.out.println("[joined chat with " + (s.peers.size()+1) + " members]");
@@ -146,12 +153,6 @@ public class Peer extends Thread {
 
 						deliver(message.toString());
 						break;
-					case "zip":
-						System.out.println("Zip");
-						break;
-					case "age":
-						System.out.println("Age");
-						break;
 					default:
 						System.out.println(type);
 				}
@@ -177,13 +178,15 @@ public class Peer extends Thread {
 		}
 	}
 
-	public void setUserName(String name) throws IllegalArgumentException {
-		if (s.legalName(name)) {
-			this.name = name;
-		}
-		else {
-			throw new IllegalArgumentException();
-		}
+	/*
+		Really java... I can't overwrite toString()?
+	*/
+	public String asString() {
+		return "[" + name + " " + age + " " + zip +"]";
+	}
+
+	public void setUserName(String name) {
+		this.name = name;
 
 	}
 
@@ -192,7 +195,7 @@ public class Peer extends Thread {
 			this.zip = zip;
 		}
 		else {
-			throw new IllegalArgumentException();
+			this.zip = 99999;
 		}
 
 	}
@@ -202,7 +205,7 @@ public class Peer extends Thread {
 			this.age = age;
 		}
 		else {
-			throw new IllegalArgumentException();
+			this.age = 200;
 		}
 	}
 

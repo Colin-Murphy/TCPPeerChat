@@ -39,30 +39,38 @@ public class ChatUI extends Thread {
 										}
 									}
 									catch (Exception e) {
-										System.out.println("[join failure - 2");
+										System.out.println("[join failure - 2]");
 										//Stop listening on the port in case it was the ip that failed
-										s.leave();
+										s.leave(true);
 									}
 								}
 								else {
-									System.out.println("[join failure - 1");
+									System.out.println("[join failure - 1]");
 									command = true;
 								}
 								break;
 							case "/leave":
-								s.leave();
-								//New copy of the session that hasn't been started yet
-								command = true;
+								if (s.joined) {
+									s.leave();
+									command = true;
+								}
+								else {
+									System.out.println("Not in a session.");
+								}
 								break;
 							case "/who":
 								command = true;
 								s.showUsers();
 								break;
 							case "/zip":
-								System.out.println("Zip");
+								int zip = Integer.parseInt(words[1]);
+								s.showZip(zip);
+								command = true;
 								break;
 							case "/age":
-								System.out.println("Age");
+								int age = Integer.parseInt(words[1]);
+								s.showAge(age);
+								command = true;
 								break;
 							case "/exit":
 								s.leave();
@@ -70,6 +78,10 @@ public class ChatUI extends Thread {
 								System.out.println("Exit");
 								break;
 						}
+					}
+
+					catch (NumberFormatException e) {
+						System.out.println("Invalid number!");
 					}
 					catch (Exception e) {
 						System.out.println("error");
