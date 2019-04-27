@@ -45,15 +45,19 @@ public class ChatUI extends Thread {
 											s.joinIP(words[1]);
 											command = true;
 										}
+
+										else {
+											System.out.println("[join failure - 2 (Can't connect)]");
+										}
 									}
 									catch (Exception e) {
-										System.out.println("[join failure - 2]");
+										System.out.println("[join failure - 2 (Can't connect)]");
 										//Stop listening on the port in case it was the ip that failed
 										s.leave(true);
 									}
 								}
 								else {
-									System.out.println("[join failure - 1]");
+									System.out.println("[join failure - 1 (Already in a session)]");
 									command = true;
 								}
 								break;

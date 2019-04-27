@@ -3,6 +3,11 @@
 	Handles main execution of program, sets up threads to do the rest
 	@author Colin Murphy <clm3888@rit.edu>
 
+	Note: This project makes use of the org.json library, an open source free use libary
+	for handling JSON data in java. This library is NOT my original work.
+
+	More information on org.json can be found here: https://mvnrepository.com/artifact/org.json/json
+
 	Part of data comm homework 3
 */
 

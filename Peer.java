@@ -184,6 +184,21 @@ public class Peer extends Thread {
 			out.flush();
 		}
 
+		//Connection died, disconnect this peer
+		catch (SocketException e) {
+			try {
+				in.close();
+				out.close();
+				sock.close();
+			}
+			catch (Exception ex) {
+				//Can't use the socket and can't close it, guess I'll just die then
+			}
+			joined = false;
+			s.peers.remove(this);
+			System.out.println("[" + name + "@" + getIP() + " left the chat]");
+		}
+
 		catch (Exception e) {
 			e.printStackTrace();
 		}

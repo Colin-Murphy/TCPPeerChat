@@ -247,21 +247,24 @@ public class Session extends Thread {
 		return zip > 0 && zip <100000;
 	}
 
-	/**
+	/*
 		Accepts raw keyboard input from user
 		Escapes message and inserts into correct format
 		Delivers to each peer
 	*/
 	public void sendMessage(String message) {
-		//Format message
 
 		//Format the message as json and escape the text
 		JSONObject m = new JSONObject();
 		m.put("type", "message");
 		m.put("message", message);
 
+		Peer[] example = new Peer[peers.size()];
+
+		Peer[] peerArr = peers.toArray(example);
 		//Deliver to all peers
-		for (Peer p: peers) {
+		for (int i=0; i<peerArr.length; i++) {
+			Peer p = peerArr[i];
 			p.deliver(m.toString());
 		}
 	}
